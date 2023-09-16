@@ -103,8 +103,9 @@ long double cost(long double a[], long double b[]) {
 void print_image(long double pixels[]) { // print the 784 pixels
 	for (int k = 0; k<784; k++){ 
 		if (k%28==0) printf("\n"); // at 28 pixels print new line
-		printf("%3.0Lf " , pixels[k]); 
+		printf("%1.0Lf " , pixels[k]); 
 	}
+	printf("\n");
 }
 
 
@@ -188,7 +189,7 @@ void train(unsigned char pixels[], unsigned char labels[]) {
 		if (i%784==0) { // train
 			long double obs[] = {0,0,0,0,0,0,0,0,0,0};	
 			obs[labels[(i/784) - 1]] = 1; // desired index/number is set to 1
-
+			print_image(input); // comment out to decrease IO lag
 			printf("%d label:%d ", i/784, labels[(i/784) - 1]);
 			backprop(input, obs);
 		}
