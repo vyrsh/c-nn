@@ -11,6 +11,7 @@ struct node
 	long double bias;
 	int *activation(long double);
 	long double output;
+	long double sum; 
 };
 
 struct layer
@@ -22,7 +23,8 @@ struct layer
 // 784I - 10 - 10O
 const int model[] = {784, 10, 10}; // specifies the size of each layer
 const int model_length = sizeof(model)/sizeof(int);
-
+const int ml = model_length-1; // abbr
+			   
 long double sigmoid(long double x)
 {
     return 1 / (1 + exp(-x));
@@ -69,7 +71,43 @@ void nn(long double input[], long double output[]) {
 	    
     }
     for (int i=0; i<model[model_length-1]; i++) output[i]=layers[model_length-1].nodes[i].output;
+}
 
+void backprop(long double input[], long double obs[]) {
+	int size = model[model_length-1];
+	long double prd[size];
+	nn(input, prd);
+	// last layer is special because of cost deriv
+	for (int i = 0; i<size ;i++) {
+		node x = layers[ml].nodes[i];
+		x.sum = -2*(obs[i]-x.output)*x.output*(1-x.output);
+	}
+
+	for(int j = model_length-1-1; j>0; j--) { // L to 1st layer
+		//iterate through nodes
+		for(int i=0; i<model[j]; i++) {
+			node x = layers[j].nodes[i];
+			for(int k=0; k<model[j+1]; k++) {
+				node x2 = layers[j+1].nodes[k]; 
+				x.sum+= x2.sum*x2.weights[i];
+			}
+			x.sum = x.sum*x.output*(1-x.output);
+		} 
+			// record change
+			// sum of error
+
+	}
+	long double rate = -0.05;
+	//change weights and biases
+	for(int j = model_length-1; j>0; j--){
+		for(int i = 0; model[j];i++){
+			node x = layers[j].nodes[i];
+			x.bias += x.sum*rate;
+			for(int k=0; k<model[j-1];k++){
+				x.weights[k] += x.sum*layers[j-1].nodes[k].output;
+			}
+		}
+	}
 }
 
 
@@ -79,6 +117,8 @@ int main() {
 	for(int i =0; i<784; i++) arr[i]=init_weight();
 	long double output[model[model_length-1]];
 	//for (int i = 0; i<model[0]; i++) printf("%Lf\n", arr[i]);
+	//
 	nn(arr, output);
 	for (int i = 0; i<model[model_length-1]; i++) printf("%Lf\n", output[i]);
+
 }
